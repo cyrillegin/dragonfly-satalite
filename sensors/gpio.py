@@ -6,24 +6,17 @@ import glob
 logging.basicConfig(format='%(levelname)s:%(asctime)s %(message)s', level=logging.INFO)
 
 
-def setup():
-    # Made sure `dtoverlay=w1-gpio` is in /boot/config.txt (requires reboot)
-    # run:
-        # sudo modprobe w1-gpio
-        # sudo modprobe w1-therm
-        # cd /sys/bus/w1/devices
-        # ls
-    # There should be a folder starting with 28-
+def setupGPIO():
     os.system('modprobe w1-gpio')
     os.system('modprobe w1-therm')
 
+    # This will need to change if there are more
+    # than one onewire devices connected
     deviceFolder = glob.glob('/sys/bus/w1/devices/28*')[0]
     deviceFile = deviceFolder + '/w1_slave'
-    print('done setting up')
     return deviceFile
 
 
-# A function that reads the sensors data
 def readTempRaw(deviceFile):
     f = open(deviceFile, 'r')
     lines = f.readlines()
@@ -31,7 +24,6 @@ def readTempRaw(deviceFile):
     return lines
 
 
-# Convert the value of the sensor into a temperature
 def readTemp(deviceFile):
     lines = readTempRaw(deviceFile)
 

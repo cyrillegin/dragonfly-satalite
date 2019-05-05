@@ -1,13 +1,55 @@
+import time
+from multiprocessing import Process
+import requests
+import json
+import logging
 from config import baseStation, sensors
-from sensors.gpio import readTemp, setup
+from sensors.gpio import readTemp, setupGPIO
+
+runningSensors = []
+
+logging.basicConfig(format='%(levelname)s:%(asctime)s %(message)s', level=logging.INFO)
+
+
+def sendToServer(sensor, data):
+    payload = {
+        'value': data,
+        'timestamp': time.time(),
+        'sensorName': sensor['sensor'],
+        'stationName': sensor['station']
+    }
+    responsee = requests.post('http://{}/api/sensor'.format(baseStation), data=json.dumps(payload))
+    logging.debug(responsee)
+
+
+def pollData(sensor, config):
+    data = None
+    if sensor['sensor'] == 'gpio':
+        data = readTemp(config)
+
+    if data is None:
+        logging.error('sensor not setup correctly')
+
+    sendToServer(sensor, data)
+
+
+def setupSensor(sensor):
+    print(sensor)
+    if sensor['sensor'] == 'gpio':
+        return setupGPIO()
+
 
 if __name__ == "__main__":
-    print('hello world')
-    print(baseStation)
-    for i in sensors:
-        print (i['name'])
-        if i['sensor'] == 'gpio':
-            print('go!')
-            file = setup()
-            temp = readTemp(file)
-            print('temp is {}'.format(temp))
+    while True:
+        logging.debug('Checking for new sensors')
+        index = 0
+        for i in sensors:
+            if len(runningSensors) < index + 1:
+                runningSensors.append(None)
+            if runningSensors[index] is None or not runningSensors[index].is_alive():
+                config = setupSensor(i)
+                p = Process(target=pollData, args=(i, config, ))
+                p.start()
+                runningSensors[index] = p
+            index += 1
+        time.sleep(60)
