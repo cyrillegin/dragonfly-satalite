@@ -19,6 +19,7 @@ def setup():
 
     deviceFolder = glob.glob('/sys/bus/w1/devices/28*')[0]
     deviceFile = deviceFolder + '/w1_slave'
+    print('done setting up')
     return deviceFile
 
 

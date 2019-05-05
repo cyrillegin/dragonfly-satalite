@@ -6,6 +6,8 @@ if __name__ == "__main__":
     print(baseStation)
     for i in sensors:
         print (i['name'])
-        if i['name'] == 'gpio':
+        if i['sensor'] == 'gpio':
+            print('go!')
             file = setup()
-            readTemp(file)
+            temp = readTemp(file)
+            print('temp is {}'.format(temp))
