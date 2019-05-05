@@ -12,6 +12,7 @@ def setupGPIO():
 
     # This will need to change if there are more
     # than one onewire devices connected
+    # TODO: make this configurable to allow for multiple sensors
     deviceFolder = glob.glob('/sys/bus/w1/devices/28*')[0]
     deviceFile = deviceFolder + '/w1_slave'
     return deviceFile

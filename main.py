@@ -1,10 +1,9 @@
 import time
 from multiprocessing import Process
 import requests
-import json
 import logging
 from config import baseStation, sensors
-from sensors.gpio import readTemp, setupGPIO
+from sensors.DS18B20 import readTemp, setupGPIO
 
 runningSensors = []
 
@@ -18,14 +17,14 @@ def sendToServer(sensor, data):
         'sensorName': sensor['sensor'],
         'stationName': sensor['station']
     }
-    responsee = requests.post('http://{}/api/reading'.format(baseStation), data=json.dumps(payload))
-    logging.debug(responsee)
+    response = requests.post('http://{}/api/reading'.format(baseStation), data=payload)
+    logging.debug(response)
 
 
 def pollData(sensor, config):
     while True:
         data = None
-        if sensor['sensor'] == 'gpio':
+        if sensor['sensor'] == 'DS18B20':
             data = readTemp(config)
 
         if data is None:
@@ -38,7 +37,7 @@ def pollData(sensor, config):
 
 def setupSensor(sensor):
     print(sensor)
-    if sensor['sensor'] == 'gpio':
+    if sensor['sensor'] == 'DS18B20':
         return setupGPIO()
 
 
