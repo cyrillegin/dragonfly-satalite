@@ -18,19 +18,22 @@ def sendToServer(sensor, data):
         'sensorName': sensor['sensor'],
         'stationName': sensor['station']
     }
-    responsee = requests.post('http://{}/api/sensor'.format(baseStation), data=json.dumps(payload))
+    responsee = requests.post('http://{}/api/reading'.format(baseStation), data=json.dumps(payload))
     logging.debug(responsee)
 
 
 def pollData(sensor, config):
-    data = None
-    if sensor['sensor'] == 'gpio':
-        data = readTemp(config)
+    while True:
+        data = None
+        if sensor['sensor'] == 'gpio':
+            data = readTemp(config)
 
-    if data is None:
-        logging.error('sensor not setup correctly')
+        if data is None:
+            logging.error('sensor not setup correctly')
 
-    sendToServer(sensor, data)
+        sendToServer(sensor, data)
+        # TODO: Move this to config
+        time.sleep(5)
 
 
 def setupSensor(sensor):
@@ -52,4 +55,5 @@ if __name__ == "__main__":
                 p.start()
                 runningSensors[index] = p
             index += 1
-        time.sleep(60)
+        # Check every five minutes
+        time.sleep(60 * 5)
